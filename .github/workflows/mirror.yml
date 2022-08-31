@@ -1,0 +1,18 @@
+name: "Repository Mirror"
+
+on:
+  - push
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    name: "Mirror"
+    steps:
+      - uses: pkgstore/github-action-mirror@main
+        with:
+          source_repo: "https://github.com/${{ github.repository }}.git"
+          source_user: "${{ secrets.BOT_GITHUB_NAME }}"
+          source_token: "${{ secrets.BOT_GITHUB_TOKEN }}"
+          target_repo: "https://gitlab.com/${{ github.repository }}.git"
+          target_user: "${{ secrets.BOT_GITLAB_NAME }}"
+          target_token: "${{ secrets.BOT_GITLAB_TOKEN }}"
