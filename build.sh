@@ -1,46 +1,50 @@
 #!/bin/bash -e
 
 # -------------------------------------------------------------------------------------------------------------------- #
+# CONFIGURATION.
+# -------------------------------------------------------------------------------------------------------------------- #
+
+# Vars.
+GIT_REPO_SRC="${1}"
+GIT_REPO_DST="${2}"
+GIT_USER="${3}"
+GIT_EMAIL="${4}"
+GIT_TOKEN="${5}"
+OBS_USER="${6}"
+OBS_PASSWORD="${7}"
+OBS_TOKEN="${8}"
+OBS_PROJECT="${9}"
+OBS_PACKAGE="${10}"
+
+# Apps.
+curl="$( command -v curl )"
+date="$( command -v date )"
+dpkg_source="$( command -v dpkg-source )"
+git="$( command -v git )"
+mv="$( command -v mv )"
+rm="$( command -v rm )"
+sleep="$( command -v sleep )"
+tar="$( command -v tar )"
+tee="$( command -v tee )"
+ts="$( _timestamp )"
+
+# Dirs.
+d_src="/root/git/repo_src"
+d_dst="/root/git/repo_dst"
+
+# Git config.
+${git} config --global user.name "${GIT_USER}"
+${git} config --global user.email "${GIT_EMAIL}"
+${git} config --global init.defaultBranch 'main'
+
+# Commands.
+cmd_src_build="${dpkg_source} -i --build _build/"
+
+# -------------------------------------------------------------------------------------------------------------------- #
 # INITIALIZATION.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 init() {
-  # Vars.
-  GIT_REPO_SRC="${1}"
-  GIT_REPO_DST="${2}"
-  GIT_USER="${3}"
-  GIT_EMAIL="${4}"
-  GIT_TOKEN="${5}"
-  OBS_USER="${6}"
-  OBS_PASSWORD="${7}"
-  OBS_TOKEN="${8}"
-  OBS_PROJECT="${9}"
-  OBS_PACKAGE="${10}"
-
-  # Apps.
-  curl="$( command -v curl )"
-  date="$( command -v date )"
-  dpkg_source="$( command -v dpkg-source )"
-  git="$( command -v git )"
-  mv="$( command -v mv )"
-  rm="$( command -v rm )"
-  sleep="$( command -v sleep )"
-  tar="$( command -v tar )"
-  tee="$( command -v tee )"
-  ts="$( _timestamp )"
-
-  # Dirs.
-  d_src="/root/git/repo_src"
-  d_dst="/root/git/repo_dst"
-
-  # Git config.
-  ${git} config --global user.name "${GIT_USER}"
-  ${git} config --global user.email "${GIT_EMAIL}"
-  ${git} config --global init.defaultBranch 'main'
-
-  # Commands.
-  cmd_src_build="${dpkg_source} -i --build _build/"
-
   # Run.
   git_clone \
     && ( ( pkg_orig_pack && pkg_src_build && pkg_src_move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
@@ -70,7 +74,7 @@ git_clone() {
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
-# PACKING: "*.ORIG" FILES.
+# SYSTEM: PACKING "*.ORIG" FILES.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 pkg_orig_pack() {
@@ -125,7 +129,7 @@ pkg_src_build() {
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
-# MOVE: PACKAGE TO DEBIAN PACKAGE STORE REPOSITORY.
+# SYSTEM: MOVE PACKAGE TO DEBIAN PACKAGE STORE REPOSITORY.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 pkg_src_move() {
