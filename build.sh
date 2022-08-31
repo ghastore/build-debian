@@ -156,7 +156,9 @@ git_push() {
 
   # Commit build files & push.
   echo "Commit build files & push..."
-  ${git} add . && ${git} commit -a -m "BUILD: ${ts}" && ${git} push
+  ${git} add . \
+    && ${git} commit -a -m "BUILD: ${ts}" \
+    && ${git} push
 
   _popd || exit 1
 }
