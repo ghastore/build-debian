@@ -1,4 +1,4 @@
-name: "GHA Store / Mirror"
+name: "Mirror"
 
 on:
   - push
