@@ -29,8 +29,8 @@ tee="$( command -v tee )"
 ts="$( _timestamp )"
 
 # Dirs.
-d_src="/root/git/repo_src"
-d_dst="/root/git/repo_dst"
+d_src="/root/git/src"
+d_dst="/root/git/dst"
 
 # Git config.
 ${git} config --global user.name "${GIT_USER}"
@@ -45,7 +45,6 @@ cmd_src_build="${dpkg_source} -i --build _build/"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 init() {
-  # Run.
   git_clone \
     && ( ( pkg_orig_pack && pkg_src_build && pkg_src_move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
     && git_push \
