@@ -6,10 +6,10 @@ branding:
   color: "blue"
 inputs:
   git_repo_src:
-    description: "Git Repository (source)"
+    description: "Git Repository (Source)"
     required: true
   git_repo_dst:
-    description: "Git Repository (destination)"
+    description: "Git Repository (Destination)"
     required: true
   git_user:
     description: "Git User"
