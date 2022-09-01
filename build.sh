@@ -26,7 +26,6 @@ rm="$( command -v rm )"
 sleep="$( command -v sleep )"
 tar="$( command -v tar )"
 tee="$( command -v tee )"
-ts="$( _timestamp )"
 
 # Dirs.
 d_src="/root/git/src"
@@ -45,6 +44,10 @@ cmd_src_build="${dpkg_source} -i --build _build/"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 init() {
+  # 'ts' function.
+  ts="$( _timestamp )"
+
+  # Run.
   git_clone \
     && ( ( pkg_orig_pack && pkg_src_build && pkg_src_move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
     && git_push \
