@@ -92,14 +92,15 @@ pkg_orig_pack() {
   for i in *.orig.tar.*; do
     if [[ -f ${i} ]]; then
       echo "File '${i}' found!"
+      ${sha256} "${i}" > "${i}.sha256"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
       local PKG_DIR="${OBS_PACKAGE}-${PKG_VER}"
       local PKG_TAR="${OBS_PACKAGE}_${PKG_VER}.orig.tar.xz"
       ${tar} -cJf "${PKG_TAR}" "${PKG_DIR}"
       echo "File '${PKG_TAR}' created!"
+      ${sha256} "${PKG_TAR}" > "${PKG_TAR}.sha256"
     fi
-    ${sha256} "${PKG_TAR}" > "${PKG_TAR}.sha256"
     break
   done
 
