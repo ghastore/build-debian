@@ -26,6 +26,7 @@ rm="$( command -v rm )"
 sleep="$( command -v sleep )"
 tar="$( command -v tar )"
 tee="$( command -v tee )"
+sha256="$( command -v sha256sum )"
 
 # Dirs.
 d_src="/root/git/src"
@@ -84,8 +85,8 @@ pkg_orig_pack() {
   _pushd "${d_src}" || exit 1
 
   # Set package version.
-  PKG_VER="1.0.0"
-  for i in "${OBS_PACKAGE}-"*; do PKG_VER=${i##*-}; break; done;
+  local PKG_VER="1.0.0"
+  for i in "${OBS_PACKAGE}-"*; do local PKG_VER=${i##*-}; break; done;
 
   # Check '*.orig.tar.*' file.
   for i in *.orig.tar.*; do
@@ -93,11 +94,12 @@ pkg_orig_pack() {
       echo "File '${i}' found!"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
-      SOURCE="${OBS_PACKAGE}-${PKG_VER}"
-      TARGET="${OBS_PACKAGE}_${PKG_VER}.orig.tar.xz"
-      ${tar} -cJf "${TARGET}" "${SOURCE}"
-      echo "File '${TARGET}' created!"
+      local PKG_DIR="${OBS_PACKAGE}-${PKG_VER}"
+      local PKG_TAR="${OBS_PACKAGE}_${PKG_VER}.orig.tar.xz"
+      ${tar} -cJf "${PKG_TAR}" "${PKG_DIR}"
+      echo "File '${PKG_TAR}' created!"
     fi
+    ${sha256} "${PKG_TAR}" > "${PKG_TAR}.sha256"
     break
   done
 
@@ -143,7 +145,7 @@ pkg_src_move() {
 
   # Move new files from 'd_src' to 'd_dst'.
   echo "Moving new files to repository..."
-  for i in _service _meta README.md LICENSE *.tar.* *.dsc *.log; do
+  for i in _service _meta README.md LICENSE *.tar.* *.dsc *.log *.sha256; do
     ${mv} -fv "${d_src}"/${i} "${d_dst}" || exit 1
   done
 }
