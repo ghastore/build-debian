@@ -1,4 +1,4 @@
-name: "Mirror"
+name: "Repository"
 
 on:
   - push

@@ -1,6 +1,6 @@
 FROM debian:stable
 
-LABEL "name"="Debian Build"
+LABEL "name"="Debian Package Builder"
 LABEL "description"=""
 LABEL "maintainer"="z17 CX <mail@z17.cx>"
 LABEL "repository"="https://github.com/ghastore/unixstore-debian-build.git"
