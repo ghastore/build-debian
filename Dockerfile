@@ -2,7 +2,7 @@ FROM debian:stable
 
 LABEL "name"="Debian Build"
 LABEL "description"=""
-LABEL "maintainer"="Kitsune Solar <kitsune.solar@gmail.com>"
+LABEL "maintainer"="z17 CX <mail@z17.cx>"
 LABEL "repository"="https://github.com/ghastore/unixstore-debian-build.git"
 LABEL "homepage"="https://github.com/ghastore"
 
