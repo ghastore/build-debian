@@ -31,7 +31,7 @@ tee="$( command -v tee )"
 d_src="/root/git/src"
 d_dst="/root/git/dst"
 
-# Git config.
+# Git.
 ${git} config --global user.name "${GIT_USER}"
 ${git} config --global user.email "${GIT_EMAIL}"
 ${git} config --global init.defaultBranch 'main'
