@@ -26,7 +26,7 @@ rm="$( command -v rm )"
 sleep="$( command -v sleep )"
 tar="$( command -v tar )"
 tee="$( command -v tee )"
-sha256="$( command -v sha256sum )"
+hash="$( command -v rhash )"
 
 # Dirs.
 d_src="/root/git/src"
@@ -51,6 +51,7 @@ init() {
   # Run.
   git_clone \
     && ( ( pkg_orig_pack && pkg_src_build && pkg_src_move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
+    && pkg_src_sum \
     && git_push \
     && obs_upload \
     && obs_trigger
@@ -92,14 +93,12 @@ pkg_orig_pack() {
   for i in *.orig.tar.*; do
     if [[ -f ${i} ]]; then
       echo "File '${i}' found!"
-      ${sha256} "${i}" > "${i}.sha256"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
       local PKG_DIR="${OBS_PACKAGE}-${PKG_VER}"
       local PKG_TAR="${OBS_PACKAGE}_${PKG_VER}.orig.tar.xz"
       ${tar} -cJf "${PKG_TAR}" "${PKG_DIR}"
       echo "File '${PKG_TAR}' created!"
-      ${sha256} "${PKG_TAR}" > "${PKG_TAR}.sha256"
     fi
     break
   done
@@ -146,9 +145,25 @@ pkg_src_move() {
 
   # Move new files from 'd_src' to 'd_dst'.
   echo "Moving new files to repository..."
-  for i in _service _meta README.md LICENSE *.tar.* *.dsc *.log *.sha256; do
+  for i in _service _meta README.md LICENSE *.tar.* *.dsc *.log; do
     ${mv} -fv "${d_src}"/${i} "${d_dst}" || exit 1
   done
+}
+
+# -------------------------------------------------------------------------------------------------------------------- #
+# SYSTEM: CHECKSUM.
+# -------------------------------------------------------------------------------------------------------------------- #
+
+pkg_src_sum() {
+  echo "--- [HASH] CHECKSUM FILES"
+  _pushd "${d_dst}" || exit 1
+
+  for i in *; do
+    echo "Checksum '${i}'..."
+    [[ -f "${i}" ]] && ${hash} -u "${OBS_PACKAGE}.sha3-256" --sha3-256 "${i}"
+  done
+
+  _popd || exit 1
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
