@@ -21,12 +21,12 @@ curl="$( command -v curl )"
 date="$( command -v date )"
 dpkg_source="$( command -v dpkg-source )"
 git="$( command -v git )"
+hash="$( command -v rhash )"
 mv="$( command -v mv )"
 rm="$( command -v rm )"
 sleep="$( command -v sleep )"
 tar="$( command -v tar )"
 tee="$( command -v tee )"
-hash="$( command -v rhash )"
 
 # Dirs.
 d_src="/root/git/src"
