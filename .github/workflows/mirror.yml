@@ -3,16 +3,22 @@ name: "Repository"
 on:
   - push
 
+env:
+  domain_src: "${{ github.server_url }}"
+  repo: "${{ github.repository }}"
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
     name: "Mirror"
+    env:
+      domain_dst: "https://gitlab.com"
     steps:
       - uses: ghastore/mirror@main
         with:
-          src_repo: "https://github.com/${{ github.repository }}.git"
+          src_repo: "${{ env.domain_src }}/${{ env.repo }}.git"
           src_user: "${{ secrets.BOT_GITHUB_NAME }}"
           src_token: "${{ secrets.BOT_GITHUB_TOKEN }}"
-          dst_repo: "https://gitlab.com/${{ github.repository }}.git"
+          dst_repo: "${{ env.domain_dst }}/${{ env.repo }}.git"
           dst_user: "${{ secrets.BOT_GITLAB_NAME }}"
           dst_token: "${{ secrets.BOT_GITLAB_TOKEN }}"
