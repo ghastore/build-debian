@@ -64,8 +64,8 @@ init() {
 git_clone() {
   echo "--- [GIT] CLONE: ${GIT_REPO_SRC#https://} & ${GIT_REPO_DST#https://}"
 
-  SRC="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_SRC#https://}"
-  DST="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_DST#https://}"
+  local SRC="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_SRC#https://}"
+  local DST="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_DST#https://}"
 
   ${git} clone "${SRC}" "${d_src}" \
     && ${git} clone "${DST}" "${d_dst}"
