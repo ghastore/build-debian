@@ -19,10 +19,12 @@ NAME="$( echo "${GIT_REPO_DST}" | awk -F '[/.]' '{ print $6 }' )"
 
 # Apps.
 build="$( command -v dpkg-source )"
+cp="$( command -v cp )"
 curl="$( command -v curl )"
 date="$( command -v date )"
 git="$( command -v git )"
 hash="$( command -v rhash )"
+mkdir="$( command -v mkdir )"
 mv="$( command -v mv )"
 rm="$( command -v rm )"
 sleep="$( command -v sleep )"
@@ -149,6 +151,11 @@ move() {
   for i in _service _meta README.md LICENSE *.tar.* *.dsc *.log; do
     ${mv} -fv "${d_src}"/${i} "${d_dst}" || exit 1
   done
+
+  # Copy GitHub Action 'mirror.yml' from 'd_src' to 'd_dst'.
+  echo "Copy GitHub Action 'mirror.yml' to repository..."
+  ${mkdir} -p "${d_dst}/.github/workflows" \
+    && ${cp} "${d_src}/.github/workflows/mirror.yml" "${d_dst}/.github/workflows/"
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
