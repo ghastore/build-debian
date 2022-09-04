@@ -64,11 +64,11 @@ init() {
 git_clone() {
   echo "--- [GIT] CLONE: ${GIT_REPO_SRC#https://} & ${GIT_REPO_DST#https://}"
 
-  local SRC="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_SRC#https://}"
-  local DST="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_DST#https://}"
+  local src="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_SRC#https://}"
+  local dst="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_DST#https://}"
 
-  ${git} clone "${SRC}" "${d_src}" \
-    && ${git} clone "${DST}" "${d_dst}"
+  ${git} clone "${src}" "${d_src}" \
+    && ${git} clone "${dst}" "${d_dst}"
 
   echo "--- [GIT] LIST: '${d_src}'"
   ls -1 "${d_src}"
@@ -86,8 +86,8 @@ pkg_orig_pack() {
   _pushd "${d_src}" || exit 1
 
   # Set package version.
-  local PKG_VER="1.0.0"
-  for i in "${OBS_PACKAGE}-"*; do local PKG_VER=${i##*-}; break; done;
+  local pkg_ver="1.0.0"
+  for i in "${OBS_PACKAGE}-"*; do local pkg_ver=${i##*-}; break; done;
 
   # Check '*.orig.tar.*' file.
   for i in *.orig.tar.*; do
@@ -95,10 +95,10 @@ pkg_orig_pack() {
       echo "File '${i}' found!"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
-      local PKG_DIR="${OBS_PACKAGE}-${PKG_VER}"
-      local PKG_TAR="${OBS_PACKAGE}_${PKG_VER}.orig.tar.xz"
-      ${tar} -cJf "${PKG_TAR}" "${PKG_DIR}"
-      echo "File '${PKG_TAR}' created!"
+      local pkg_dir="${OBS_PACKAGE}-${pkg_ver}"
+      local pkg_tar="${OBS_PACKAGE}_${pkg_ver}.orig.tar.xz"
+      ${tar} -cJf "${pkg_tar}" "${pkg_dir}"
+      echo "File '${pkg_tar}' created!"
     fi
     break
   done
