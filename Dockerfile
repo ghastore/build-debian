@@ -3,7 +3,7 @@ FROM debian:stable
 LABEL "name"="Debian Package Builder"
 LABEL "description"=""
 LABEL "maintainer"="z17 CX <mail@z17.cx>"
-LABEL "repository"="https://github.com/ghastore/unixstore-debian-build.git"
+LABEL "repository"="https://github.com/ghastore/store-debian-build.git"
 LABEL "homepage"="https://github.com/ghastore"
 
 RUN apt update && apt install --yes ca-certificates
