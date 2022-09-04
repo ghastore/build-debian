@@ -15,11 +15,12 @@ OBS_PASSWORD="${7}"
 OBS_TOKEN="${8}"
 OBS_PROJECT="${9}"
 OBS_PACKAGE="${10}"
+NAME="$( echo "${GIT_REPO_DST}" | awk -F '[/.]' '{ print $6 }' )"
 
 # Apps.
+build="$( command -v dpkg-source )"
 curl="$( command -v curl )"
 date="$( command -v date )"
-dpkg_source="$( command -v dpkg-source )"
 git="$( command -v git )"
 hash="$( command -v rhash )"
 mv="$( command -v mv )"
@@ -38,7 +39,7 @@ ${git} config --global user.email "${GIT_EMAIL}"
 ${git} config --global init.defaultBranch 'main'
 
 # Commands.
-cmd_src_build="${dpkg_source} -i --build _build/"
+cmd_build="${build} -i --build _build/"
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # INITIALIZATION.
@@ -49,10 +50,10 @@ init() {
   ts="$( _timestamp )"
 
   # Run.
-  git_clone \
-    && ( ( pkg_orig_pack && pkg_src_build && pkg_src_move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
-    && pkg_src_sum \
-    && git_push \
+  clone \
+    && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/build.log" \
+    && sum \
+    && push \
     && obs_upload \
     && obs_trigger
 }
@@ -61,7 +62,7 @@ init() {
 # GIT: CLONE REPOSITORIES.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-git_clone() {
+clone() {
   echo "--- [GIT] CLONE: ${GIT_REPO_SRC#https://} & ${GIT_REPO_DST#https://}"
 
   local src="https://${GIT_USER}:${GIT_TOKEN}@${GIT_REPO_SRC#https://}"
@@ -81,13 +82,13 @@ git_clone() {
 # SYSTEM: PACKING "*.ORIG" FILES.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-pkg_orig_pack() {
-  echo "--- [SYSTEM] PACK: '${OBS_PACKAGE}' (*.orig.tar.xz)"
+pack() {
+  echo "--- [SYSTEM] PACK: '${NAME}' (*.orig.tar.xz)"
   _pushd "${d_src}" || exit 1
 
   # Set package version.
-  local pkg_ver="1.0.0"
-  for i in "${OBS_PACKAGE}-"*; do local pkg_ver=${i##*-}; break; done;
+  local ver="1.0.0"
+  for i in "${NAME}-"*; do local ver=${i##*-}; break; done;
 
   # Check '*.orig.tar.*' file.
   for i in *.orig.tar.*; do
@@ -95,10 +96,10 @@ pkg_orig_pack() {
       echo "File '${i}' found!"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
-      local pkg_dir="${OBS_PACKAGE}-${pkg_ver}"
-      local pkg_tar="${OBS_PACKAGE}_${pkg_ver}.orig.tar.xz"
-      ${tar} -cJf "${pkg_tar}" "${pkg_dir}"
-      echo "File '${pkg_tar}' created!"
+      local dir="${NAME}-${ver}"
+      local tar="${NAME}_${ver}.orig.tar.xz"
+      ${tar} -cJf "${tar}" "${dir}"
+      echo "File '${tar}' created!"
     fi
     break
   done
@@ -110,12 +111,12 @@ pkg_orig_pack() {
 # SYSTEM: BUILD PACKAGE.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-pkg_src_build() {
+build() {
   echo "--- [SYSTEM] BUILD: '${GIT_REPO_SRC#https://}'"
   _pushd "${d_src}" || exit 1
 
   # Run build.
-  ${cmd_src_build}
+  ${cmd_build}
 
   # Check build status.
   for i in *.dsc; do
@@ -136,7 +137,7 @@ pkg_src_build() {
 # SYSTEM: MOVE PACKAGE TO DEBIAN PACKAGE STORE REPOSITORY.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-pkg_src_move() {
+move() {
   echo "--- [SYSTEM] MOVE: '${d_src}' -> '${d_dst}'"
 
   # Remove old files from 'd_dst'.
@@ -154,13 +155,13 @@ pkg_src_move() {
 # SYSTEM: CHECKSUM.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-pkg_src_sum() {
+sum() {
   echo "--- [HASH] CHECKSUM FILES"
   _pushd "${d_dst}" || exit 1
 
   for i in *; do
     echo "Checksum '${i}'..."
-    [[ -f "${i}" ]] && ${hash} -u "${OBS_PACKAGE}.sha3-256" --sha3-256 "${i}"
+    [[ -f "${i}" ]] && ${hash} -u "${NAME}.sha3-256" --sha3-256 "${i}"
   done
 
   _popd || exit 1
@@ -170,7 +171,7 @@ pkg_src_sum() {
 # GIT: PUSH PACKAGE TO DEBIAN PACKAGE STORE REPOSITORY.
 # -------------------------------------------------------------------------------------------------------------------- #
 
-git_push() {
+push() {
   echo "--- [GIT] PUSH: '${d_dst}' -> '${GIT_REPO_DST#https://}'"
   _pushd "${d_dst}" || exit 1
 
