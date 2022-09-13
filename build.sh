@@ -78,6 +78,8 @@ clone() {
 
   echo "--- [GIT] LIST: '${d_dst}'"
   ls -1 "${d_dst}"
+
+  ${sleep} 2
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -106,7 +108,7 @@ pack() {
     break
   done
 
-  _popd || exit 1
+  ${sleep} 2; _popd || exit 1
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -132,7 +134,7 @@ build() {
     break
   done
 
-  _popd || exit 1
+  ${sleep} 2; _popd || exit 1
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -156,6 +158,8 @@ move() {
   echo "Copy GitHub Action 'mirror.yml' to repository..."
   ${mkdir} -p "${d_dst}/.github/workflows" \
     && ${cp} "${d_src}/.github/workflows/mirror.yml" "${d_dst}/.github/workflows/"
+
+  ${sleep} 2
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -171,7 +175,7 @@ sum() {
     [[ -f "${i}" ]] && ${hash} -u "${NAME}.sha3-256" --sha3-256 "${i}"
   done
 
-  _popd || exit 1
+  ${sleep} 2; _popd || exit 1
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -184,11 +188,22 @@ push() {
 
   # Commit build files & push.
   echo "Commit build files & push..."
-  ${git} add . \
-    && ${git} commit -a -m "BUILD: ${ts}" \
-    && ${git} push
+  push_response=1; push_attempt=1
 
-  _popd || exit 1
+  until [[ ${push_response} -eq 0 ]] || [[ ${push_attempt} -gt 5 ]]; do
+    ${git} add . \
+      && ${git} commit -a -m "BUILD: ${ts}" \
+      && ${git} push
+    push_response=$?; push_attempt=$(( push_attempt + 1 ))
+    [[ ${push_response} -ne 0 ]] && ${sleep} 5
+  done
+
+  # Exit if git push error.
+  if [[ ${push_response} -ne 0 ]] && [[ ${push_attempt} -gt 5 ]]; then
+    exit ${push_response}
+  fi
+
+  ${sleep} 2; _popd || exit 1
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -219,6 +234,8 @@ obs_trigger() {
   echo "--- [OBS] TRIGGER: '${OBS_PROJECT}/${OBS_PACKAGE}'"
   ${curl} -H "Authorization: Token ${OBS_TOKEN}" -X POST \
     "https://api.opensuse.org/trigger/runservice?project=${OBS_PROJECT}&package=${OBS_PACKAGE}"
+
+  ${sleep} 5
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
