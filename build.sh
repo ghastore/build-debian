@@ -73,11 +73,19 @@ clone() {
   ${git} clone "${src}" "${d_src}" \
     && ${git} clone "${dst}" "${d_dst}"
 
-  echo "--- [GIT] LIST: '${d_src}'"
-  ls -1 "${d_src}"
+  if [[ -d "${d_src}" ]] && [[ "$( ls -a ${d_src} )" ]]; then
+    echo "--- [GIT] LIST: '${d_src}'"; ls -1 "${d_src}"
+  else
+    echo "ERROR: Directory ${d_src} not exist or empty!"
+    exit 1
+  fi
 
-  echo "--- [GIT] LIST: '${d_dst}'"
-  ls -1 "${d_dst}"
+  if [[ -d "${d_dst}" ]] && [[ "$( ls -a ${d_dst} )" ]]; then
+    echo "--- [GIT] LIST: '${d_dst}'"; ls -1 "${d_dst}"
+  else
+    echo "ERROR: Directory ${d_dst} not exist or empty!"
+    exit 1
+  fi
 
   ${sleep} 2
 }
@@ -128,7 +136,7 @@ build() {
       echo "File '${i}' found!"
       echo "Build completed!"
     else
-      echo "File '*.dsc' not found!"
+      echo "ERROR: File '*.dsc' not found!"
       exit 1
     fi
     break
@@ -194,12 +202,14 @@ push() {
     ${git} add . \
       && ${git} commit -a -m "BUILD: ${ts}" \
       && ${git} push
+
     push_response=$?; push_attempt=$(( push_attempt + 1 ))
     [[ ${push_response} -ne 0 ]] && ${sleep} 5
   done
 
   # Exit if git push error.
   if [[ ${push_response} -ne 0 ]] && [[ ${push_attempt} -gt 5 ]]; then
+    echo "ERROR: Git push error!"
     exit ${push_response}
   fi
 
@@ -213,15 +223,20 @@ push() {
 obs_upload() {
   echo "--- [OBS] UPLOAD: '${OBS_PROJECT}/${OBS_PACKAGE}'"
 
-  # Upload '_meta'.
-  echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_meta'..."
-  ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
-    "${d_dst}/_meta" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_meta"
+  if [[ -n ${OBS_PROJECT} ]] && [[ -n ${OBS_PACKAGE} ]] && [[ -n ${OBS_USER} ]] && [[ -n ${OBS_PASSWORD} ]]; then
+    # Upload '_meta'.
+    echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_meta'..."
+    ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
+      "${d_dst}/_meta" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_meta"
 
-  # Upload '_service'.
-  echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_service'..."
-  ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
-    "${d_dst}/_service" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_service"
+    # Upload '_service'.
+    echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_service'..."
+    ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
+      "${d_dst}/_service" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_service"
+  else
+    echo "ERROR: Insufficient data to perform the operation!"
+    exit 1
+  fi
 
   ${sleep} 5
 }
@@ -232,8 +247,13 @@ obs_upload() {
 
 obs_trigger() {
   echo "--- [OBS] TRIGGER: '${OBS_PROJECT}/${OBS_PACKAGE}'"
-  ${curl} -H "Authorization: Token ${OBS_TOKEN}" -X POST \
-    "https://api.opensuse.org/trigger/runservice?project=${OBS_PROJECT}&package=${OBS_PACKAGE}"
+  if [[ -n ${OBS_PROJECT} ]] && [[ -n ${OBS_PACKAGE} ]] && [[ -n ${OBS_TOKEN} ]]; then
+    ${curl} -H "Authorization: Token ${OBS_TOKEN}" -X POST \
+      "https://api.opensuse.org/trigger/runservice?project=${OBS_PROJECT}&package=${OBS_PACKAGE}"
+  else
+    echo "ERROR: Insufficient data to perform the operation!"
+    exit 1
+  fi
 
   ${sleep} 5
 }
