@@ -54,7 +54,7 @@ init() {
 
   # Run.
   clone \
-    && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/build.${ts_ver}.log" \
+    && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/${NAME}.${ts_ver}.log" \
     && sum \
     && push \
     && obs_upload \
