@@ -49,7 +49,8 @@ cmd_build="${build} -i --build _build/"
 
 init() {
   # Functions.
-  ts="$( _timestamp )"
+  ts_date="$( _ts_date )"
+  ts_ver="$( _ts_ver )"
 
   # Run.
   clone \
@@ -180,7 +181,7 @@ sum() {
 
   for i in *; do
     echo "Checksum '${i}'..."
-    [[ -f "${i}" ]] && ${hash} -u "${NAME}.sha3-256" --sha3-256 "${i}"
+    [[ -f "${i}" ]] && ${hash} -u "${NAME}.${ts_ver}.sha3-256" --sha3-256 "${i}"
   done
 
   ${sleep} 2; _popd || exit 1
@@ -200,7 +201,7 @@ push() {
 
   until [[ ${push_response} -eq 0 ]] || [[ ${push_attempt} -gt 5 ]]; do
     ${git} add . \
-      && ${git} commit -a -m "BUILD: ${ts}" \
+      && ${git} commit -a -m "BUILD: ${ts_date}" \
       && ${git} push
 
     push_response=$?; push_attempt=$(( push_attempt + 1 ))
@@ -272,9 +273,14 @@ _popd() {
   command popd > /dev/null || exit 1
 }
 
-# Timestamp.
-_timestamp() {
+# Timestamp: Date.
+_ts_date() {
   ${date} -u '+%Y-%m-%d %T'
+}
+
+# Timestamp: Version.
+_ts_ver() {
+  ${date} -u '+%Y-%m-%d.%H-%M-%S'
 }
 
 # -------------------------------------------------------------------------------------------------------------------- #
