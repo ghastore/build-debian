@@ -15,7 +15,8 @@ OBS_PASSWORD="${7}"
 OBS_TOKEN="${8}"
 OBS_PROJECT="${9}"
 OBS_PACKAGE="${10}"
-NAME="$( echo "${GIT_REPO_DST}" | awk -F '[/.]' '{ print $6 }' )"
+PKG_NAME="$( echo "${GIT_REPO_DST}" | awk -F '[/.]' '{ print $6 }' )"
+USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
 
 # Apps.
 build="$( command -v dpkg-source )"
@@ -54,7 +55,7 @@ init() {
 
   # Run.
   clone \
-    && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/${NAME}.${ts_ver}.log" \
+    && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/${PKG_NAME}.${ts_ver}.log" \
     && sum \
     && push \
     && obs_upload \
@@ -96,12 +97,12 @@ clone() {
 # -------------------------------------------------------------------------------------------------------------------- #
 
 pack() {
-  echo "--- [SYSTEM] PACK: '${NAME}' (*.orig.tar.xz)"
+  echo "--- [SYSTEM] PACK: '${PKG_NAME}' (*.orig.tar.xz)"
   _pushd "${d_src}" || exit 1
 
   # Set package version.
   local ver="1.0.0"
-  for i in "${NAME}-"*; do local ver=${i##*-}; break; done;
+  for i in "${PKG_NAME}-"*; do local ver=${i##*-}; break; done;
 
   # Check '*.orig.tar.*' file.
   for i in *.orig.tar.*; do
@@ -109,8 +110,8 @@ pack() {
       echo "File '${i}' found!"
     else
       echo "File '*.orig.tar.*' not found! Creating..."
-      local dir="${NAME}-${ver}"
-      local tar="${NAME}_${ver}.orig.tar.xz"
+      local dir="${PKG_NAME}-${ver}"
+      local tar="${PKG_NAME}_${ver}.orig.tar.xz"
       ${tar} -cJf "${tar}" "${dir}"
       echo "File '${tar}' created!"
     fi
@@ -181,7 +182,7 @@ sum() {
 
   for i in *; do
     echo "Checksum '${i}'..."
-    [[ -f "${i}" ]] && ${hash} -u "${NAME}.${ts_ver}.sha3-256" --sha3-256 "${i}"
+    [[ -f "${i}" ]] && ${hash} -u "${PKG_NAME}.${ts_ver}.sha3-256" --sha3-256 "${i}"
   done
 
   ${sleep} 2; _popd || exit 1
@@ -228,12 +229,14 @@ obs_upload() {
     # Upload '_meta'.
     echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_meta'..."
     ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
-      "${d_dst}/_meta" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_meta"
+      "${d_dst}/_meta" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_meta" \
+      -A "${USER_AGENT}"
 
     # Upload '_service'.
     echo "Uploading '${OBS_PROJECT}/${OBS_PACKAGE}/_service'..."
     ${curl} -u "${OBS_USER}":"${OBS_PASSWORD}" -X PUT -T \
-      "${d_dst}/_service" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_service"
+      "${d_dst}/_service" "https://api.opensuse.org/source/${OBS_PROJECT}/${OBS_PACKAGE}/_service" \
+      -A "${USER_AGENT}"
   else
     echo "ERROR: Insufficient data to perform the operation!"
     exit 1
@@ -250,7 +253,8 @@ obs_trigger() {
   echo "--- [OBS] TRIGGER: '${OBS_PROJECT}/${OBS_PACKAGE}'"
   if [[ -n ${OBS_PROJECT} ]] && [[ -n ${OBS_PACKAGE} ]] && [[ -n ${OBS_TOKEN} ]]; then
     ${curl} -H "Authorization: Token ${OBS_TOKEN}" -X POST \
-      "https://api.opensuse.org/trigger/runservice?project=${OBS_PROJECT}&package=${OBS_PACKAGE}"
+      "https://api.opensuse.org/trigger/runservice?project=${OBS_PROJECT}&package=${OBS_PACKAGE}" \
+      -A "${USER_AGENT}"
   else
     echo "ERROR: Insufficient data to perform the operation!"
     exit 1
