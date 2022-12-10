@@ -49,11 +49,9 @@ cmd_build="${build} -i --build _build/"
 # -------------------------------------------------------------------------------------------------------------------- #
 
 init() {
-  # Functions.
   ts_date="$( _ts_date )"
   ts_ver="$( _ts_ver )"
 
-  # Run.
   clone \
     && ( ( pack && build && move ) 2>&1 ) | ${tee} "${d_src}/${PKG_NAME}.${ts_ver}.log" \
     && sum \

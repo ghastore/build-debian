@@ -2,8 +2,8 @@ FROM debian:stable
 
 LABEL "name"="Debian Package Builder"
 LABEL "description"=""
-LABEL "maintainer"="z17 Development <mail@z17.dev>"
-LABEL "repository"="https://github.com/ghastore/store-debian-build.git"
+LABEL "maintainer"="v77 Development <mail@v77.dev>"
+LABEL "repository"="https://github.com/ghastore/build-debian.git"
 LABEL "homepage"="https://github.com/ghastore"
 
 RUN apt update && apt install --yes ca-certificates

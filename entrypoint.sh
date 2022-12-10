@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 bash -c "/build.sh $*"
 
